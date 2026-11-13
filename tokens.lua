@@ -1,80 +1,86 @@
-ILLEGAL = "ILLEGAL"
-EOF = "EOF"
-ASSIGN = "="
-EQ = "=="
-NOT_EQ = "!="
-IDENT = "IDENT"
-INT = "INT"
-PLUS = "+"
-COMMA = ","
-SEMICOLON = ";"
-COLON = ":"
-MINUS = "-"
-BANG = "!"
-SLASH = "/"
-ASTERISK = "*"
-LT = "<"
-GT = ">"
-LPAREN = "("
-RPAREN = ")"
-LBRACE = "{"
-RBRACE = "}"
-LBRACKET = "["
-RBRACKET = "]"
-FUNCTION = "FUNCTION"
-LET = "LET"
-TRUE = "TRUE"
-FALSE = "FALSE"
-IF = "IF"
-ELSE = "ELSE"
-RETURN = "RETURN"
-STRING = "STRING"
+local tokens = {}
+
+tokens.ILLEGAL = "ILLEGAL"
+tokens.EOF = "EOF"
+tokens.ASSIGN = "="
+tokens.EQ = "=="
+tokens.NOT_EQ = "!="
+tokens.IDENT = "IDENT"
+tokens.INT = "INT"
+tokens.PLUS = "+"
+tokens.COMMA = ","
+tokens.SEMICOLON = ";"
+tokens.COLON = ":"
+tokens.MINUS = "-"
+tokens.BANG = "!"
+tokens.SLASH = "/"
+tokens.ASTERISK = "*"
+tokens.LT = "<"
+tokens.GT = ">"
+tokens.LPAREN = "("
+tokens.RPAREN = ")"
+tokens.LBRACE = "{"
+tokens.RBRACE = "}"
+tokens.LBRACKET = "["
+tokens.RBRACKET = "]"
+tokens.FUNCTION = "FUNCTION"
+tokens.LET = "LET"
+tokens.TRUE = "TRUE"
+tokens.FALSE = "FALSE"
+tokens.IF = "IF"
+tokens.ELSE = "ELSE"
+tokens.RETURN = "RETURN"
+tokens.STRING = "STRING"
 
 local function keywords(name)
 	if name == "fn" then
-		return FUNCTION
+		return tokens.FUNCTION
 	end
 	if name == "let" then
-		return LET
+		return tokens.LET
 	end
 	if name == "true" then
-		return TRUE
+		return tokens.TRUE
 	end
 	if name == "false" then
-		return FALSE
+		return tokens.FALSE
 	end
 	if name == "if" then
-		return IF
+		return tokens.IF
 	end
 	if name == "else" then
-		return ELSE
+		return tokens.ELSE
 	end
 	if name == "return" then
-		return RETURN
+		return tokens.RETURN
 	end
 	return nil
 end
 
-function LookupIdent(name)
+function tokens.lookupIdent(name)
 	local reserved = keywords(name)
 	if reserved == nil then
-		return IDENT
+		return tokens.IDENT
 	end
 	return reserved
 end
 
-function Token(tokenType, literal)
+function tokens.Token(tokenType, literal)
 	return { tokenType, literal }
 end
 
-Token_tokenType = 1
-function Token_getTokenType(token)
-	return token[Token_tokenType]
+local _tokenType = 1
+function tokens.getTokenType(token)
+	return token[_tokenType]
 end
-Token_literal = 2
-function Token_getLiteral(token)
-	return token[Token_tokenType]
+
+local _literal = 2
+function tokens.getLiteral(token)
+	return token[_literal]
 end
-function Token_toString(token)
-	return string.format("Token(tokenType:%s, literal:'%s')", token[Token_tokenType], token[Token_literal])
+
+function tokens.toString(token)
+	return string.format("Token(tokenType:%s, literal:'%s')", token[_tokenType], token[_literal])
 end
+
+return tokens
