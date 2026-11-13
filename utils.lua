@@ -7,4 +7,10 @@ function utils.ternary(cond, t, f)
 	return f
 end
 
+function utils.forEach(array, body)
+	for i = 1, #array do
+		body(array[i])
+	end
+end
+
 return utils
