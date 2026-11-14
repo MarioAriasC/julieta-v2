@@ -79,89 +79,89 @@ local function readString(l)
 	return string.sub(l[_input], start, (l[_position] - 1))
 end
 
-local lexer = {}
+local _lexer = {}
 
-function lexer.Lexer(input)
+function _lexer.Lexer(input)
 	local this = { input, 1, 1, _ZERO }
 	readChar(this)
 	return this
 end
 
-function lexer.nextToken(_lexer)
+function _lexer.nextToken(lexer)
 	local function endsWithEqual(oneChar, twoChar, duplicateChar)
-		if peakChar(_lexer) ~= "=" then
-			return token(_lexer, oneChar)
+		if peakChar(lexer) ~= "=" then
+			return token(lexer, oneChar)
 		end
-		local currentChar = _lexer[_ch]
-		readChar(_lexer)
+		local currentChar = lexer[_ch]
+		readChar(lexer)
 		return tokens.Token(
 			twoChar,
 			utils.ternary(
 				duplicateChar,
 				string.format("%s%s", currentChar, currentChar),
-				string.format("%s%s", currentChar, _lexer[_ch])
+				string.format("%s%s", currentChar, lexer[_ch])
 			)
 		)
 	end
-	skipWhitespace(_lexer)
+	skipWhitespace(lexer)
 
 	local r = nil
 
-	if _lexer[_ch] == "=" then
+	if lexer[_ch] == "=" then
 		r = endsWithEqual(tokens.ASSIGN, tokens.EQ, true)
-	elseif _lexer[_ch] == ";" then
-		r = token(_lexer, tokens.SEMICOLON)
-	elseif _lexer[_ch] == ":" then
-		r = token(_lexer, tokens.COLON)
-	elseif _lexer[_ch] == "," then
-		r = token(_lexer, tokens.COMMA)
-	elseif _lexer[_ch] == "(" then
-		r = token(_lexer, tokens.LPAREN)
-	elseif _lexer[_ch] == ")" then
-		r = token(_lexer, tokens.RPAREN)
-	elseif _lexer[_ch] == "{" then
-		r = token(_lexer, tokens.LBRACE)
-	elseif _lexer[_ch] == "}" then
-		r = token(_lexer, tokens.RBRACE)
-	elseif _lexer[_ch] == "[" then
-		r = token(_lexer, tokens.LBRACKET)
-	elseif _lexer[_ch] == "]" then
-		r = token(_lexer, tokens.RBRACKET)
-	elseif _lexer[_ch] == "+" then
-		r = token(_lexer, tokens.PLUS)
-	elseif _lexer[_ch] == "-" then
-		r = token(_lexer, tokens.MINUS)
-	elseif _lexer[_ch] == "*" then
-		r = token(_lexer, tokens.ASTERISK)
-	elseif _lexer[_ch] == "/" then
-		r = token(_lexer, tokens.SLASH)
-	elseif _lexer[_ch] == ">" then
-		r = token(_lexer, tokens.GT)
-	elseif _lexer[_ch] == "<" then
-		r = token(_lexer, tokens.LT)
-	elseif _lexer[_ch] == "!" then
+	elseif lexer[_ch] == ";" then
+		r = token(lexer, tokens.SEMICOLON)
+	elseif lexer[_ch] == ":" then
+		r = token(lexer, tokens.COLON)
+	elseif lexer[_ch] == "," then
+		r = token(lexer, tokens.COMMA)
+	elseif lexer[_ch] == "(" then
+		r = token(lexer, tokens.LPAREN)
+	elseif lexer[_ch] == ")" then
+		r = token(lexer, tokens.RPAREN)
+	elseif lexer[_ch] == "{" then
+		r = token(lexer, tokens.LBRACE)
+	elseif lexer[_ch] == "}" then
+		r = token(lexer, tokens.RBRACE)
+	elseif lexer[_ch] == "[" then
+		r = token(lexer, tokens.LBRACKET)
+	elseif lexer[_ch] == "]" then
+		r = token(lexer, tokens.RBRACKET)
+	elseif lexer[_ch] == "+" then
+		r = token(lexer, tokens.PLUS)
+	elseif lexer[_ch] == "-" then
+		r = token(lexer, tokens.MINUS)
+	elseif lexer[_ch] == "*" then
+		r = token(lexer, tokens.ASTERISK)
+	elseif lexer[_ch] == "/" then
+		r = token(lexer, tokens.SLASH)
+	elseif lexer[_ch] == ">" then
+		r = token(lexer, tokens.GT)
+	elseif lexer[_ch] == "<" then
+		r = token(lexer, tokens.LT)
+	elseif lexer[_ch] == "!" then
 		r = endsWithEqual(tokens.BANG, tokens.NOT_EQ, false)
-	elseif _lexer[_ch] == '"' then
-		r = tokens.Token(tokens.STRING, readString(_lexer))
-	elseif _lexer[_ch] == _ZERO then
+	elseif lexer[_ch] == '"' then
+		r = tokens.Token(tokens.STRING, readString(lexer))
+	elseif lexer[_ch] == _ZERO then
 		r = tokens.Token(tokens.EOF, _ZERO)
 	end
 
 	if r ~= nil then
-		readChar(_lexer)
+		readChar(lexer)
 		return r
 	end
 
-	if isIdentifier(_lexer[_ch]) then
-		local identifier = readIdentifer(_lexer)
+	if isIdentifier(lexer[_ch]) then
+		local identifier = readIdentifer(lexer)
 		return tokens.Token(tokens.lookupIdent(identifier), identifier)
 	end
 
-	if isDigit(_lexer[_ch]) then
-		return tokens.Token(tokens.INT, readNumber(_lexer))
+	if isDigit(lexer[_ch]) then
+		return tokens.Token(tokens.INT, readNumber(lexer))
 	end
 
 	return tokens.Token(tokens.ILLEGAL, lexer[_ch])
 end
 
-return lexer
+return _lexer

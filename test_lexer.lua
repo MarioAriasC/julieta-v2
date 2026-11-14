@@ -1,4 +1,4 @@
-local lexer = require("lexer")
+local _lexer = require("lexer")
 local ut = require("utilstest")
 local tokens = require("tokens")
 require("busted.runner")()
@@ -29,7 +29,7 @@ if (5 < 10) {
 [1,2];
 {"foo":"bar"}
         ]]
-		local _lexer = lexer.Lexer(code)
+		local lexer = _lexer.Lexer(code)
 		local expected = {
 			{ tokens.LET, "let" },
 			{ tokens.IDENT, "five" },
@@ -119,7 +119,7 @@ if (5 < 10) {
 			{ tokens.EOF, "" },
 		}
 		ut.forEachTests(expected, 2, function(tokenType, literal)
-			local token = lexer.nextToken(_lexer)
+			local token = _lexer.nextToken(lexer)
 			assert.are.same(tokenType, tokens.getTokenType(token))
 			assert.are.same(literal, tokens.getLiteral(token))
 		end)
