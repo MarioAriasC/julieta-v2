@@ -50,7 +50,7 @@ function utiltests.assertLetStatement(statement, expectedIdentifier, assert)
 end
 
 function utiltests.assertLiteralExpression(value, expectedValue, assert)
-	print(ast.toString(value))
+	-- print(ast.toString(value))
 	local expectedType = type(expectedValue)
 	if expectedType == "boolean" then
 		utiltests.assertBoolean(value, expectedValue, assert)
@@ -71,5 +71,11 @@ end
 utiltests.assertIntegerLiteral = assertLiteral
 utiltests.assertBoolean = assertLiteral
 utiltests.assertIdentifier = assertLiteral
+
+function utiltests.assertInfixExpression(expression, leftValue, operator, rightValue, assert)
+	utiltests.assertLiteralExpression(ast.infixExpression.getLeft(expression), leftValue, assert)
+	assert.are.same(operator, ast.infixExpression.getOperator(expression))
+	utiltests.assertLiteralExpression(ast.infixExpression.getRight(expression), rightValue, assert)
+end
 
 return utiltests

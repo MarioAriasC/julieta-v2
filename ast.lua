@@ -111,6 +111,27 @@ function ast.prefixExpression.getRight(prefixExpression)
 	return prefixExpression[_prefix_right]
 end
 
+function ast.InfixExpression(token, left, operator, right)
+	return { "InfixExpression", token, left, operator, right }
+end
+
+ast.infixExpression = {}
+
+local _infix_left = 3
+local _infix_operator = 4
+local _infix_right = 5
+
+function ast.infixExpression.getLeft(infixExpression)
+	return infixExpression[_infix_left]
+end
+
+function ast.infixExpression.getOperator(infixExpression)
+	return infixExpression[_infix_operator]
+end
+
+function ast.infixExpression.getRight(infixExpression)
+	return infixExpression[_infix_right]
+end
 function ast.toString(instance)
 	local className = ast.getClassName(instance)
 	if className == "IntegerLiteral" or className == "BooleanLiteral" then

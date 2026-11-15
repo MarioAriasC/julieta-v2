@@ -75,8 +75,31 @@ local function prefixParser(tokenType)
 	end
 end
 
+-- forward declaration
+local curPrecedence
+
 local function infixParser(tokenType)
-	return nil
+	if
+		tokenType == tokens.PLUS
+		or tokenType == tokens.MINUS
+		or tokenType == tokens.SLASH
+		or tokenType == tokens.ASTERISK
+		or tokenType == tokens.EQ
+		or tokenType == tokens.NOT_EQ
+		or tokenType == tokens.LT
+		or tokenType == tokens.GT
+	then
+		return function(p, left)
+			local token = p[_curToken]
+			local operator = tokens.getLiteral(token)
+			local precedence = curPrecedence(p)
+			nextToken(p)
+			local right = parseExpression(p, precedence)
+			return ast.InfixExpression(token, left, operator, right)
+		end
+	else
+		return nil
+	end
 end
 
 local function findPrecedence(tokenType)
@@ -99,6 +122,10 @@ local function findPrecedence(tokenType)
 		return INDEX
 	end
 	return LOWEST
+end
+
+curPrecedence = function(p)
+	return findPrecedence(tokens.getTokenType(p[_curToken]))
 end
 
 local function peekPrecedence(p)

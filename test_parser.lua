@@ -71,5 +71,27 @@ describe("A parser", function()
 				ut.assertLiteralExpression(ast.prefixExpression.getRight(expression), value, assert)
 			end)
 		end)
+		it("infix expressions", function()
+			local tests = {
+				{ "5 + 5;", 5, "+", 5 },
+				{ "5 - 5;", 5, "-", 5 },
+				{ "5 * 5;", 5, "*", 5 },
+				{ "5 / 5;", 5, "/", 5 },
+				{ "5 > 5;", 5, ">", 5 },
+				{ "5 < 5;", 5, "<", 5 },
+				{ "5 == 5;", 5, "==", 5 },
+				{ "5 != 5;", 5, "!=", 5 },
+				{ "true == true", true, "==", true },
+				{ "true != false", true, "!=", false },
+				{ "false == false", false, "==", false },
+			}
+			ut.forEachTests(tests, 4, function(input, leftValue, operator, rightValue)
+				local program = ut.createProgram(input)
+				ut.countStatements(1, program, assert)
+				local statement = ast.program.getStatements(program)[1]
+				local expression = ast.expressionStatement.getExpression(statement)
+				ut.assertInfixExpression(expression, leftValue, operator, rightValue, assert)
+			end)
+		end)
 	end)
 end)
