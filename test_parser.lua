@@ -42,5 +42,18 @@ describe("A parser", function()
 			assert.are.same("foobar", ast.identifier.getValue(identifier))
 			assert.are.same("foobar", ast.getTokenLiteral(identifier))
 		end)
+		it("integer literals", function()
+			local input = "5;"
+			local program = ut.createProgram(input)
+			ut.countStatements(1, program, assert)
+			local statement = ast.program.getStatements(program)[1]
+			local expression = ast.expressionStatement.getExpression(statement)
+			if ast.getClassName(expression) == "IntegerLiteral" then
+				assert.are.same(5, ast.literal.getValue(expression))
+				assert.are.same("5", ast.getTokenLiteral(expression))
+			else
+				error(string.format("statement.expression not IntegerLiteral. got=%s", tostring(statement)))
+			end
+		end)
 	end)
 end)
