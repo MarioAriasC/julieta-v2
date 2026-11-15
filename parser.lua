@@ -148,6 +148,15 @@ local function parseReturnStatement(p)
 	return ast.ReturnStatement(token, returnValue)
 end
 
+local function parseExpressionStatement(p)
+	local token = p[_curToken]
+	local expression = parseExpression(p, LOWEST)
+	if peekTokenIs(p, tokens.SEMICOLON) then
+		nextToken(p)
+	end
+	return ast.ExpressionStatement(token, expression)
+end
+
 local function parseStatement(p)
 	local curTokenType = tokens.getTokenType(p[_curToken])
 	if curTokenType == tokens.LET then

@@ -84,6 +84,17 @@ function ast.returnStatement.getReturnValue(returnStatement)
 	return returnStatement[_retrun_statement_value]
 end
 
+function ast.ExpressionStatement(token, expression)
+	return { "ExpressionStatement", token, expression }
+end
+
+ast.expressionStatement = {}
+
+local _expression = 3
+function ast.expressionStatement.getExpression(expressionStatement)
+	return expressionStatement[_expression]
+end
+
 function ast.toString(instance)
 	local className = ast.getClassName(instance)
 	if className == "IntegerLiteral" or className == "BooleanLiteral" then
