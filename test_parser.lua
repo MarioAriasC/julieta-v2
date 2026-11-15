@@ -55,5 +55,21 @@ describe("A parser", function()
 				error(string.format("statement.expression not IntegerLiteral. got=%s", tostring(statement)))
 			end
 		end)
+		it("prefix expression", function()
+			local tests = {
+				{ "!5;", "!", 5 },
+				{ "-15;", "-", 15 },
+				{ "!true;", "!", true },
+				{ "!false;", "!", false },
+			}
+			ut.forEachTests(tests, 3, function(input, operator, value)
+				local program = ut.createProgram(input)
+				ut.countStatements(1, program, assert)
+				local statement = ast.program.getStatements(program)[1]
+				local expression = ast.expressionStatement.getExpression(statement)
+				assert.are.same(operator, ast.prefixExpression.getOperator(expression))
+				ut.assertLiteralExpression(ast.prefixExpression.getRight(expression), value, assert)
+			end)
+		end)
 	end)
 end)

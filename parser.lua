@@ -40,6 +40,9 @@ local function curTokenIs(p, tokenType)
 	return tokens.getTokenType(p[_curToken]) == tokenType
 end
 
+-- forward declaration
+local parseExpression
+
 local function prefixParser(tokenType)
 	if tokenType == tokens.INT then
 		return function(p)
@@ -59,8 +62,17 @@ local function prefixParser(tokenType)
 		return function(p)
 			return ast.Identifier(p[_curToken], tokens.getLiteral(p[_curToken]))
 		end
+	elseif tokenType == tokens.BANG or tokenType == tokens.MINUS then
+		return function(p)
+			local token = p[_curToken]
+			local operator = tokens.getLiteral(token)
+			nextToken(p)
+			local right = parseExpression(p, PREFIX)
+			return ast.PrefixExpression(token, operator, right)
+		end
+	else
+		return nil
 	end
-	return nil
 end
 
 local function infixParser(tokenType)
@@ -97,7 +109,7 @@ local function prefixParserError(p, tokenType)
 	table.insert(p[_errors], string.format("no prefix parser for %s token type", tokenType))
 end
 
-local function parseExpression(p, precedence)
+parseExpression = function(p, precedence)
 	local prefix = prefixParser(tokens.getTokenType(p[_curToken]))
 	if prefix == nil then
 		prefixParserError(p, tokens.getTokenType(p[_curToken]))

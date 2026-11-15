@@ -1,5 +1,5 @@
 local tokens = require("tokens")
-
+local cjson = require("cjson")
 local ast = {}
 
 function ast.Program(statements)
@@ -10,7 +10,7 @@ local _className = 1
 local _token = 2
 
 function ast.getClassName(instance)
-	-- print(instance)
+	-- print(cjson.encode(instance))
 	return instance[_className]
 end
 
@@ -95,14 +95,35 @@ function ast.expressionStatement.getExpression(expressionStatement)
 	return expressionStatement[_expression]
 end
 
+function ast.PrefixExpression(token, operator, right)
+	return { "PrefixExpression", token, operator, right }
+end
+
+ast.prefixExpression = {}
+local _prefix_operator = 3
+local _prefix_right = 4
+
+function ast.prefixExpression.getOperator(prefixExpression)
+	return prefixExpression[_prefix_operator]
+end
+
+function ast.prefixExpression.getRight(prefixExpression)
+	return prefixExpression[_prefix_right]
+end
+
 function ast.toString(instance)
 	local className = ast.getClassName(instance)
 	if className == "IntegerLiteral" or className == "BooleanLiteral" then
 		return ast.getTokenLiteral(instance)
 	elseif className == "Identifier" then
 		return instance[_identifier_value]
+	elseif className == "ExpressionStatement" then
+		return ast.toString(instance[_expression])
+	elseif className == "PrefixExpression" then
+		return string.format("(%s%s)", instance[_prefix_operator], ast.toString(instance[_prefix_right]))
+	else
+		error(string.format("toString not implemented for type %s", className))
 	end
-	error(string.format("toString not implemented for type %s", className))
 end
 
 return ast
