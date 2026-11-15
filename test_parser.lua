@@ -19,5 +19,19 @@ describe("A parser", function()
 				ut.assertLiteralExpression(value, expectedValue, assert)
 			end)
 		end)
+		it("return statements", function()
+			local tests = {
+				{ "return 5;", 5 },
+				{ "return true;", true },
+				{ "return foobar;", "foobar" },
+			}
+			ut.forEachTests(tests, 2, function(input, expectedIdentifier)
+				local program = ut.createProgram(input)
+				ut.countStatements(1, program, assert)
+				local statement = ast.program.getStatements(program)[1]
+				assert.are.same("return", ast.getTokenLiteral(statement))
+				ut.assertLiteralExpression(ast.returnStatement.getReturnValue(statement), expectedIdentifier, assert)
+			end)
+		end)
 	end)
 end)

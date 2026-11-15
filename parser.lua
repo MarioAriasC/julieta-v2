@@ -138,6 +138,16 @@ local function parseLetStatement(p)
 	return ast.LetStatement(token, name, value)
 end
 
+local function parseReturnStatement(p)
+	local token = p[_curToken]
+	nextToken(p)
+	local returnValue = parseExpression(p, LOWEST)
+	while peekTokenIs(p, tokens.SEMICOLON) do
+		nextToken(p)
+	end
+	return ast.ReturnStatement(token, returnValue)
+end
+
 local function parseStatement(p)
 	local curTokenType = tokens.getTokenType(p[_curToken])
 	if curTokenType == tokens.LET then

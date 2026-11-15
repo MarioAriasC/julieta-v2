@@ -10,6 +10,7 @@ local _className = 1
 local _token = 2
 
 function ast.getClassName(instance)
+	-- print(instance)
 	return instance[_className]
 end
 
@@ -70,6 +71,17 @@ end
 
 function ast.letStatement.getValue(letStatement)
 	return letStatement[_let_statement_value]
+end
+
+function ast.ReturnStatement(token, returnValue)
+	return { "ReturnStatement", token, returnValue }
+end
+
+ast.returnStatement = {}
+
+local _retrun_statement_value = 3
+function ast.returnStatement.getReturnValue(returnStatement)
+	return returnStatement[_retrun_statement_value]
 end
 
 function ast.toString(instance)

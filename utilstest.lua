@@ -50,7 +50,7 @@ function utiltests.assertLetStatement(statement, expectedIdentifier, assert)
 end
 
 function utiltests.assertLiteralExpression(value, expectedValue, assert)
-	-- print(ast.toString(value))
+	print(ast.toString(value))
 	local expectedType = type(expectedValue)
 	if expectedType == "boolean" then
 		utiltests.assertBoolean(value, expectedValue, assert)
