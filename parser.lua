@@ -42,6 +42,7 @@ end
 
 -- forward declaration
 local parseExpression
+local parseExpressionList
 
 local function prefixParser(tokenType)
 	if tokenType == tokens.INT then
@@ -70,6 +71,20 @@ local function prefixParser(tokenType)
 			local right = parseExpression(p, PREFIX)
 			return ast.PrefixExpression(token, operator, right)
 		end
+	elseif tokenType == tokens.LPAREN then
+		return function(p)
+			nextToken(p)
+			local expression = parseExpression(p, LOWEST)
+			if expectPeek(p, tokens.RPAREN) then
+				return expression
+			end
+			return nil
+		end
+	elseif tokenType == tokens.LBRACKET then
+		return function(p)
+			local token = p[_curToken]
+			return ast.ArrayLiteral(token, parseExpressionList(p, tokens.RBRACKET))
+		end
 	else
 		return nil
 	end
@@ -97,9 +112,47 @@ local function infixParser(tokenType)
 			local right = parseExpression(p, precedence)
 			return ast.InfixExpression(token, left, operator, right)
 		end
+	elseif tokenType == tokens.LPAREN then
+		return function(p, expression)
+			local token = p[_curToken]
+			local arguments = parseExpressionList(p, tokens.RPAREN)
+			return ast.CallExpression(token, expression, arguments)
+		end
+	elseif tokenType == tokens.LBRACKET then
+		return function(p, left)
+			local token = p[_curToken]
+			nextToken(p)
+			local index = parseExpression(p, LOWEST)
+			if expectPeek(p, tokens.RBRACKET) then
+				return ast.IndexExpression(token, left, index)
+			end
+			return nil
+		end
 	else
 		return nil
 	end
+end
+
+parseExpressionList = function(p, endTokenType)
+	local arguments = {}
+	if peekTokenIs(p, endTokenType) then
+		nextToken(p)
+		return arguments
+	end
+
+	nextToken(p)
+	table.insert(arguments, parseExpression(p, LOWEST))
+
+	while peekTokenIs(p, tokens.COMMA) do
+		nextToken(p)
+		nextToken(p)
+		table.insert(arguments, parseExpression(p, LOWEST))
+	end
+
+	if expectPeek(p, endTokenType) then
+		return arguments
+	end
+	return nil
 end
 
 local function findPrecedence(tokenType)
@@ -143,7 +196,7 @@ parseExpression = function(p, precedence)
 		return nil
 	end
 	local left = prefix(p)
-	while not (peekTokenIs(p, tokens.SEMICOLON) and (precedence < peekPrecedence(p))) do
+	while (not peekTokenIs(p, tokens.SEMICOLON)) and precedence < peekPrecedence(p) do
 		local infix = infixParser(tokens.getTokenType(p[_peekToken]))
 		if infix == nil then
 			return left

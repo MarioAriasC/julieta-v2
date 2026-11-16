@@ -13,4 +13,27 @@ function utils.forEach(array, body)
 	end
 end
 
+function utils.stack_trace_with_return(body)
+	local ok, final = xpcall(function()
+		return body
+	end, function(raw_error)
+		return debug.traceback(raw_error, 2)
+	end)
+
+	if not ok then
+		print(final)
+		return nil
+	else
+		return final
+	end
+end
+
+function utils.map(array, body)
+	local t = {}
+	for k, v in pairs(array) do
+		t[k] = body(v)
+	end
+	return t
+end
+
 return utils

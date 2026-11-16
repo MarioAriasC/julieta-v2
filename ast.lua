@@ -1,5 +1,6 @@
 local tokens = require("tokens")
 local cjson = require("cjson")
+local utils = require("utils")
 local ast = {}
 
 function ast.Program(statements)
@@ -24,9 +25,9 @@ end
 
 ast.program = {}
 
-local _programStatements = 2
+local _program_statements = 2
 function ast.program.getStatements(program)
-	return program[_programStatements]
+	return program[_program_statements]
 end
 
 local _identifier_value = 3
@@ -132,7 +133,34 @@ end
 function ast.infixExpression.getRight(infixExpression)
 	return infixExpression[_infix_right]
 end
+
+function ast.CallExpression(token, expression, arguments)
+	return { "CallExpression", token, expression, arguments }
+end
+
+ast.callExpression = {}
+
+local _call_expression = 3
+local _call_arguments = 4
+
+function ast.ArrayLiteral(token, elements)
+	return { "ArrayLiteral", token, elements }
+end
+
+ast.arrayLiteral = {}
+
+local _array_elements = 3
+
+function ast.IndexExpression(token, left, index)
+	return { "IndexExpression", token, left, index }
+end
+
+ast.indexExpression = {}
+local _index_left = 3
+local _index_index = 4
+
 function ast.toString(instance)
+	-- print(cjson.encode(instance))
 	local className = ast.getClassName(instance)
 	if className == "IntegerLiteral" or className == "BooleanLiteral" then
 		return ast.getTokenLiteral(instance)
@@ -142,6 +170,25 @@ function ast.toString(instance)
 		return ast.toString(instance[_expression])
 	elseif className == "PrefixExpression" then
 		return string.format("(%s%s)", instance[_prefix_operator], ast.toString(instance[_prefix_right]))
+	elseif className == "Program" then
+		return table.concat(utils.map(instance[_program_statements], ast.toString), "")
+	elseif className == "InfixExpression" then
+		return string.format(
+			"(%s %s %s)",
+			ast.toString(instance[_infix_left]),
+			instance[_infix_operator],
+			ast.toString(instance[_infix_right])
+		)
+	elseif className == "CallExpression" then
+		return string.format(
+			"%s(%s)",
+			ast.toString(instance[_call_expression]),
+			table.concat(utils.map(instance[_call_arguments], ast.toString), ", ")
+		)
+	elseif className == "ArrayLiteral" then
+		return string.format("[%s]", table.concat(utils.map(instance[_array_elements], ast.toString), ", "))
+	elseif className == "IndexExpression" then
+		return string.format("(%s[%s])", ast.toString(instance[_index_left]), ast.toString(instance[_index_index]))
 	else
 		error(string.format("toString not implemented for type %s", className))
 	end
