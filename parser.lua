@@ -2,6 +2,7 @@ local _lexer = require("lexer")
 local tokens = require("tokens")
 local _parser = {}
 local ast = require("ast")
+local utils = require("utils")
 
 local LOWEST = 1
 local EQUALS = 2
@@ -43,6 +44,7 @@ end
 -- forward declaration
 local parseExpression
 local parseExpressionList
+local parseBlockStatement
 
 local function prefixParser(tokenType)
 	if tokenType == tokens.INT then
@@ -84,6 +86,33 @@ local function prefixParser(tokenType)
 		return function(p)
 			local token = p[_curToken]
 			return ast.ArrayLiteral(token, parseExpressionList(p, tokens.RBRACKET))
+		end
+	elseif tokenType == tokens.IF then
+		return function(p)
+			local token = p[_curToken]
+			if not expectPeek(p, tokens.LPAREN) then
+				return nil
+			end
+			nextToken(p)
+			local condition = parseExpression(p, LOWEST)
+			if not expectPeek(p, tokens.RPAREN) then
+				return nil
+			end
+
+			if not expectPeek(p, tokens.LBRACE) then
+				return nil
+			end
+
+			local consequence = parseBlockStatement(p)
+			local alternative
+			if peekTokenIs(p, tokens.ELSE) then
+				nextToken(p)
+				if not expectPeek(p, tokens.LBRACE) then
+					return nil
+				end
+				alternative = parseBlockStatement(p)
+			end
+			return ast.IfExpression(token, condition, consequence, alternative)
 		end
 	else
 		return nil
@@ -258,6 +287,21 @@ local function parseStatement(p)
 		return parseReturnStatement(p)
 	end
 	return parseExpressionStatement(p)
+end
+
+parseBlockStatement = function(p)
+	local token = p[_curToken]
+	local statements = {}
+	nextToken(p)
+
+	while (not curTokenIs(p, tokens.RBRACE)) and (not curTokenIs(p, tokens.EOF)) do
+		local statement = parseStatement(p)
+		if statement ~= nil then
+			table.insert(statements, statement)
+		end
+		nextToken(p)
+	end
+	return ast.BlockStatement(token, statements)
 end
 
 function _parser.Parser(lexer)

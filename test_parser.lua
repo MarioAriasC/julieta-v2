@@ -1,5 +1,6 @@
 local ut = require("utilstest")
 local ast = require("ast")
+local utils = require("utils")
 require("busted.runner")()
 
 describe("A parser", function()
@@ -208,6 +209,44 @@ describe("A parser", function()
 				local program = ut.createProgram(input)
 				assert.are.same(expected, ast.toString(program))
 			end)
+		end)
+		it("boolean expression", function()
+			local tests = {
+				{ "true", true },
+				{ "false", false },
+			}
+			ut.forEachTests(tests, 2, function(input, expected)
+				local program = ut.createProgram(input)
+				ut.countStatements(1, program, assert)
+				local booleanLiteral = ut.getExpression(program)
+				assert.are.same(expected, ast.literal.getValue(booleanLiteral))
+			end)
+		end)
+
+		local function assertIfExpression(input)
+			local program = ut.createProgram(input)
+			ut.countStatements(1, program, assert)
+			local exp = ut.getExpression(program)
+			ut.assertInfixExpression(ast.ifExpression.getCondition(exp), "x", "<", "y", assert)
+			local consequenseStatements = ast.blockStatement.getStatements(ast.ifExpression.getConsequence(exp))
+			assert.are.same(1, utils.len(consequenseStatements))
+			local consequence = consequenseStatements[1]
+			ut.assertIdentifier(ast.expressionStatement.getExpression(consequence), "x", assert)
+			return exp
+		end
+
+		it("if expression", function()
+			local input = "if (x < y) { x }"
+			local exp = assertIfExpression(input)
+			assert.are.same(nil, exp.alternative)
+		end)
+		it("if else expression", function()
+			local input = "if (x < y) { x } else { y }"
+			local exp = assertIfExpression(input)
+			local alternativeStatements = ast.blockStatement.getStatements(ast.ifExpression.getAlternative(exp))
+			assert.are.same(1, utils.len(alternativeStatements))
+			local alternative = alternativeStatements[1]
+			ut.assertIdentifier(ast.expressionStatement.getExpression(alternative), "y", assert)
 		end)
 	end)
 end)

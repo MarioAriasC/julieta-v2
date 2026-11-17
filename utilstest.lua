@@ -78,4 +78,8 @@ function utiltests.assertInfixExpression(expression, leftValue, operator, rightV
 	utiltests.assertLiteralExpression(ast.infixExpression.getRight(expression), rightValue, assert)
 end
 
+function utiltests.getExpression(program)
+	return ast.expressionStatement.getExpression(ast.program.getStatements(program)[1])
+end
+
 return utiltests

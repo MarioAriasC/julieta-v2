@@ -13,7 +13,7 @@ function utils.forEach(array, body)
 	end
 end
 
-function utils.stack_trace_with_return(body)
+function utils.stacktrace_capture_with_return(body)
 	local ok, final = xpcall(function()
 		return body
 	end, function(raw_error)
@@ -34,6 +34,14 @@ function utils.map(array, body)
 		t[k] = body(v)
 	end
 	return t
+end
+
+function utils.len(table)
+	local i = 0
+	for _k, _v in pairs(table) do
+		i = i + 1
+	end
+	return i
 end
 
 return utils

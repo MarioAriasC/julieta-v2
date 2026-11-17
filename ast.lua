@@ -159,6 +159,39 @@ ast.indexExpression = {}
 local _index_left = 3
 local _index_index = 4
 
+function ast.BlockStatement(token, statements)
+	return { "BlockStatement", token, statements }
+end
+
+ast.blockStatement = {}
+
+local _block_statements = 3
+
+function ast.blockStatement.getStatements(blockStatement)
+	return blockStatement[_block_statements]
+end
+
+function ast.IfExpression(token, condition, consequence, alternative)
+	return { "IfExpression", token, condition, consequence, alternative }
+end
+
+ast.ifExpression = {}
+
+local _if_condition = 3
+local _if_consequence = 4
+local _if_alternative = 5
+
+function ast.ifExpression.getCondition(ifExpression)
+	return ifExpression[_if_condition]
+end
+
+function ast.ifExpression.getConsequence(ifExpression)
+	return ifExpression[_if_consequence]
+end
+function ast.ifExpression.getAlternative(ifExpression)
+	return ifExpression[_if_alternative]
+end
+
 function ast.toString(instance)
 	-- print(cjson.encode(instance))
 	local className = ast.getClassName(instance)
