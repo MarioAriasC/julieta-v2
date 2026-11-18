@@ -23,7 +23,7 @@ function utiltests.createProgram(input)
 end
 
 function utiltests.countStatements(expectedSize, program, assert)
-	local size = #ast.program.getStatements(program)
+	local size = #program[ast.programStatements]
 	assert.are.same(expectedSize, size)
 end
 
@@ -44,9 +44,9 @@ function utiltests.forEachTests(tests, parameterSize, body)
 end
 
 function utiltests.assertLetStatement(statement, expectedIdentifier, assert)
-	assert.are.same("let", ast.getTokenLiteral(statement))
-	assert.are.same(expectedIdentifier, ast.literal.getValue(ast.letStatement.getName(statement)))
-	assert.are.same(expectedIdentifier, ast.getTokenLiteral(ast.letStatement.getName(statement)))
+	assert.are.same("let", statement[ast.token][tokens.literal])
+	assert.are.same(expectedIdentifier, statement[ast.letStatementName][ast.literalValue])
+	assert.are.same(expectedIdentifier, statement[ast.letStatementName][ast.token][tokens.literal])
 end
 
 function utiltests.assertLiteralExpression(value, expectedValue, assert)
@@ -64,8 +64,8 @@ function utiltests.assertLiteralExpression(value, expectedValue, assert)
 end
 
 local function assertLiteral(expression, expectedValue, assert)
-	assert.are.same(expectedValue, ast.literal.getValue(expression))
-	assert.are.same(tostring(expectedValue), ast.getTokenLiteral(expression))
+	assert.are.same(expectedValue, expression[ast.literalValue])
+	assert.are.same(tostring(expectedValue), expression[ast.token][tokens.literal])
 end
 
 utiltests.assertIntegerLiteral = assertLiteral
@@ -73,13 +73,13 @@ utiltests.assertBoolean = assertLiteral
 utiltests.assertIdentifier = assertLiteral
 
 function utiltests.assertInfixExpression(expression, leftValue, operator, rightValue, assert)
-	utiltests.assertLiteralExpression(ast.infixExpression.getLeft(expression), leftValue, assert)
-	assert.are.same(operator, ast.infixExpression.getOperator(expression))
-	utiltests.assertLiteralExpression(ast.infixExpression.getRight(expression), rightValue, assert)
+	utiltests.assertLiteralExpression(expression[ast.infixExpressionLeft], leftValue, assert)
+	assert.are.same(operator, expression[ast.infixExpressionOperator])
+	utiltests.assertLiteralExpression(expression[ast.infixExpressionRight], rightValue, assert)
 end
 
 function utiltests.getExpression(program)
-	return ast.expressionStatement.getExpression(ast.program.getStatements(program)[1])
+	return program[ast.programStatements][1][ast.expressionStatementExpression]
 end
 
 return utiltests

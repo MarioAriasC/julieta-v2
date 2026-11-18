@@ -1,6 +1,7 @@
 local ut = require("utilstest")
 local ast = require("ast")
 local utils = require("utils")
+local tokens = require("tokens")
 require("busted.runner")()
 
 describe("A parser", function()
@@ -14,9 +15,9 @@ describe("A parser", function()
 			ut.forEachTests(tests, 3, function(input, expectedIdentifier, expectedValue)
 				local program = ut.createProgram(input)
 				ut.countStatements(1, program, assert)
-				local statement = ast.program.getStatements(program)[1]
+				local statement = program[ast.programStatements][1]
 				ut.assertLetStatement(statement, expectedIdentifier, assert)
-				local value = ast.letStatement.getValue(statement)
+				local value = statement[ast.letStatementValue]
 				ut.assertLiteralExpression(value, expectedValue, assert)
 			end)
 		end)
@@ -29,29 +30,27 @@ describe("A parser", function()
 			ut.forEachTests(tests, 2, function(input, expectedIdentifier)
 				local program = ut.createProgram(input)
 				ut.countStatements(1, program, assert)
-				local statement = ast.program.getStatements(program)[1]
-				assert.are.same("return", ast.getTokenLiteral(statement))
-				ut.assertLiteralExpression(ast.returnStatement.getReturnValue(statement), expectedIdentifier, assert)
+				local statement = program[ast.programStatements][1]
+				assert.are.same("return", statement[ast.token][tokens.literal])
+				ut.assertLiteralExpression(statement[ast.returnStatementValue], expectedIdentifier, assert)
 			end)
 		end)
 		it("identifier expression", function()
 			local input = "foobar;"
 			local program = ut.createProgram(input)
 			ut.countStatements(1, program, assert)
-			local statement = ast.program.getStatements(program)[1]
-			local identifier = ast.expressionStatement.getExpression(statement)
-			assert.are.same("foobar", ast.identifier.getValue(identifier))
-			assert.are.same("foobar", ast.getTokenLiteral(identifier))
+			local identifier = ut.getExpression(program)
+			assert.are.same("foobar", identifier[ast.identifierValue])
+			assert.are.same("foobar", identifier[ast.token][tokens.literal])
 		end)
 		it("integer literals", function()
 			local input = "5;"
 			local program = ut.createProgram(input)
 			ut.countStatements(1, program, assert)
-			local statement = ast.program.getStatements(program)[1]
-			local expression = ast.expressionStatement.getExpression(statement)
-			if ast.getClassName(expression) == "IntegerLiteral" then
-				assert.are.same(5, ast.literal.getValue(expression))
-				assert.are.same("5", ast.getTokenLiteral(expression))
+			local expression = ut.getExpression(program)
+			if expression[ast.className] == "IntegerLiteral" then
+				assert.are.same(5, expression[ast.literalValue])
+				assert.are.same("5", expression[ast.token][tokens.literal])
 			else
 				error(string.format("statement.expression not IntegerLiteral. got=%s", tostring(statement)))
 			end
@@ -66,10 +65,9 @@ describe("A parser", function()
 			ut.forEachTests(tests, 3, function(input, operator, value)
 				local program = ut.createProgram(input)
 				ut.countStatements(1, program, assert)
-				local statement = ast.program.getStatements(program)[1]
-				local expression = ast.expressionStatement.getExpression(statement)
-				assert.are.same(operator, ast.prefixExpression.getOperator(expression))
-				ut.assertLiteralExpression(ast.prefixExpression.getRight(expression), value, assert)
+				local expression = ut.getExpression(program)
+				assert.are.same(operator, expression[ast.prefixExpressionOperator])
+				ut.assertLiteralExpression(expression[ast.prefixExpressionRight], value, assert)
 			end)
 		end)
 		it("infix expressions", function()
@@ -89,8 +87,7 @@ describe("A parser", function()
 			ut.forEachTests(tests, 4, function(input, leftValue, operator, rightValue)
 				local program = ut.createProgram(input)
 				ut.countStatements(1, program, assert)
-				local statement = ast.program.getStatements(program)[1]
-				local expression = ast.expressionStatement.getExpression(statement)
+				local expression = ut.getExpression(program)
 				ut.assertInfixExpression(expression, leftValue, operator, rightValue, assert)
 			end)
 		end)
@@ -219,7 +216,7 @@ describe("A parser", function()
 				local program = ut.createProgram(input)
 				ut.countStatements(1, program, assert)
 				local booleanLiteral = ut.getExpression(program)
-				assert.are.same(expected, ast.literal.getValue(booleanLiteral))
+				assert.are.same(expected, booleanLiteral[ast.literalValue])
 			end)
 		end)
 
@@ -227,11 +224,11 @@ describe("A parser", function()
 			local program = ut.createProgram(input)
 			ut.countStatements(1, program, assert)
 			local exp = ut.getExpression(program)
-			ut.assertInfixExpression(ast.ifExpression.getCondition(exp), "x", "<", "y", assert)
-			local consequenseStatements = ast.blockStatement.getStatements(ast.ifExpression.getConsequence(exp))
+			ut.assertInfixExpression(exp[ast.ifExpressionCondition], "x", "<", "y", assert)
+			local consequenseStatements = exp[ast.ifExpressionConsequence][ast.blokStatementStatements]
 			assert.are.same(1, utils.len(consequenseStatements))
 			local consequence = consequenseStatements[1]
-			ut.assertIdentifier(ast.expressionStatement.getExpression(consequence), "x", assert)
+			ut.assertIdentifier(consequence[ast.expressionStatementExpression], "x", assert)
 			return exp
 		end
 
@@ -243,10 +240,10 @@ describe("A parser", function()
 		it("if else expression", function()
 			local input = "if (x < y) { x } else { y }"
 			local exp = assertIfExpression(input)
-			local alternativeStatements = ast.blockStatement.getStatements(ast.ifExpression.getAlternative(exp))
+			local alternativeStatements = exp[ast.ifExpressionAlternative][ast.blokStatementStatements]
 			assert.are.same(1, utils.len(alternativeStatements))
 			local alternative = alternativeStatements[1]
-			ut.assertIdentifier(ast.expressionStatement.getExpression(alternative), "y", assert)
+			ut.assertIdentifier(alternative[ast.expressionStatementExpression], "y", assert)
 		end)
 	end)
 end)

@@ -8,27 +8,16 @@ function ast.Program(statements)
 end
 
 local _className = 1
+
+ast.className = _className
+
 local _token = 2
 
-function ast.getClassName(instance)
-	-- print(cjson.encode(instance))
-	return instance[_className]
-end
-
-function ast.getToken(instance)
-	return instance[_token]
-end
-
-function ast.getTokenLiteral(instance)
-	return instance[_token][tokens.literal]
-end
-
-ast.program = {}
+ast.token = _token
 
 local _program_statements = 2
-function ast.program.getStatements(program)
-	return program[_program_statements]
-end
+
+ast.programStatements = _program_statements
 
 local _identifier_value = 3
 
@@ -36,22 +25,14 @@ function ast.Identifier(token, value)
 	return { "Identifier", token, value }
 end
 
-ast.identifier = {}
+ast.identifierValue = _identifier_value
 
-function ast.identifier.getValue(identifier)
-	return identifier[_identifier_value]
-end
-
-local _literal_value = 3
 function ast.IntegerLiteral(token, value)
 	return { "IntegerLiteral", token, value }
 end
 
-ast.literal = {}
-
-function ast.literal.getValue(literal)
-	return literal[_literal_value]
-end
+local _literal_value = 3
+ast.literalValue = _literal_value
 
 function ast.BooleanLiteral(token, value)
 	return { "BooleanLiteral", token, value }
@@ -59,144 +40,101 @@ end
 
 local _let_statement_name = 3
 local _let_statement_value = 4
+ast.letStatementName = _let_statement_name
+ast.letStatementValue = _let_statement_value
 
 function ast.LetStatement(token, name, value)
 	return { "LetStatement", token, name, value }
-end
-
-ast.letStatement = {}
-
-function ast.letStatement.getName(letStatement)
-	return letStatement[_let_statement_name]
-end
-
-function ast.letStatement.getValue(letStatement)
-	return letStatement[_let_statement_value]
 end
 
 function ast.ReturnStatement(token, returnValue)
 	return { "ReturnStatement", token, returnValue }
 end
 
-ast.returnStatement = {}
-
 local _retrun_statement_value = 3
-function ast.returnStatement.getReturnValue(returnStatement)
-	return returnStatement[_retrun_statement_value]
-end
+ast.returnStatementValue = _retrun_statement_value
 
 function ast.ExpressionStatement(token, expression)
 	return { "ExpressionStatement", token, expression }
 end
 
-ast.expressionStatement = {}
-
 local _expression = 3
-function ast.expressionStatement.getExpression(expressionStatement)
-	return expressionStatement[_expression]
-end
+ast.expressionStatementExpression = _expression
 
 function ast.PrefixExpression(token, operator, right)
 	return { "PrefixExpression", token, operator, right }
 end
 
-ast.prefixExpression = {}
 local _prefix_operator = 3
 local _prefix_right = 4
 
-function ast.prefixExpression.getOperator(prefixExpression)
-	return prefixExpression[_prefix_operator]
-end
-
-function ast.prefixExpression.getRight(prefixExpression)
-	return prefixExpression[_prefix_right]
-end
+ast.prefixExpressionOperator = _prefix_operator
+ast.prefixExpressionRight = _prefix_right
 
 function ast.InfixExpression(token, left, operator, right)
 	return { "InfixExpression", token, left, operator, right }
 end
 
-ast.infixExpression = {}
-
 local _infix_left = 3
 local _infix_operator = 4
 local _infix_right = 5
 
-function ast.infixExpression.getLeft(infixExpression)
-	return infixExpression[_infix_left]
-end
-
-function ast.infixExpression.getOperator(infixExpression)
-	return infixExpression[_infix_operator]
-end
-
-function ast.infixExpression.getRight(infixExpression)
-	return infixExpression[_infix_right]
-end
+ast.infixExpressionLeft = _infix_left
+ast.infixExpressionOperator = _infix_operator
+ast.infixExpressionRight = _infix_right
 
 function ast.CallExpression(token, expression, arguments)
 	return { "CallExpression", token, expression, arguments }
 end
 
-ast.callExpression = {}
-
 local _call_expression = 3
 local _call_arguments = 4
+
+ast.callExpressionExpression = _call_expression
+ast.callExpressionArguments = _call_arguments
 
 function ast.ArrayLiteral(token, elements)
 	return { "ArrayLiteral", token, elements }
 end
 
-ast.arrayLiteral = {}
-
 local _array_elements = 3
+ast.arrayLiteralElements = _array_elements
 
 function ast.IndexExpression(token, left, index)
 	return { "IndexExpression", token, left, index }
 end
 
-ast.indexExpression = {}
 local _index_left = 3
 local _index_index = 4
+
+ast.indexExpessionLeft = _index_left
+ast.indexExpessionIndex = _index_index
 
 function ast.BlockStatement(token, statements)
 	return { "BlockStatement", token, statements }
 end
 
-ast.blockStatement = {}
-
 local _block_statements = 3
 
-function ast.blockStatement.getStatements(blockStatement)
-	return blockStatement[_block_statements]
-end
+ast.blokStatementStatements = _block_statements
 
 function ast.IfExpression(token, condition, consequence, alternative)
 	return { "IfExpression", token, condition, consequence, alternative }
 end
 
-ast.ifExpression = {}
-
 local _if_condition = 3
 local _if_consequence = 4
 local _if_alternative = 5
 
-function ast.ifExpression.getCondition(ifExpression)
-	return ifExpression[_if_condition]
-end
-
-function ast.ifExpression.getConsequence(ifExpression)
-	return ifExpression[_if_consequence]
-end
-function ast.ifExpression.getAlternative(ifExpression)
-	return ifExpression[_if_alternative]
-end
+ast.ifExpressionCondition = _if_condition
+ast.ifExpressionConsequence = _if_consequence
+ast.ifExpressionAlternative = _if_alternative
 
 function ast.toString(instance)
 	-- print(cjson.encode(instance))
-	local className = ast.getClassName(instance)
+	local className = instance[_className]
 	if className == "IntegerLiteral" or className == "BooleanLiteral" then
-		return ast.getTokenLiteral(instance)
+		return instance[_token][tokens.literal]
 	elseif className == "Identifier" then
 		return instance[_identifier_value]
 	elseif className == "ExpressionStatement" then
