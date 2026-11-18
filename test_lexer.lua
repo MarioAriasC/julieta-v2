@@ -120,8 +120,8 @@ if (5 < 10) {
 		}
 		ut.forEachTests(expected, 2, function(tokenType, literal)
 			local token = _lexer.nextToken(lexer)
-			assert.are.same(tokenType, tokens.getTokenType(token))
-			assert.are.same(literal, tokens.getLiteral(token))
+			assert.are.same(tokenType, token[tokens.tokenType])
+			assert.are.same(literal, token[tokens.literal])
 		end)
 	end)
 end)

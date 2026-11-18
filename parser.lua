@@ -24,7 +24,7 @@ local function nextToken(p)
 end
 
 local function peekTokenIs(p, tokenType)
-	return tokens.getTokenType(p[_peekToken]) == tokenType
+	return p[_peekToken][tokens.tokenType] == tokenType
 end
 
 local function expectPeek(p, tokenType)
@@ -38,7 +38,7 @@ local function expectPeek(p, tokenType)
 end
 
 local function curTokenIs(p, tokenType)
-	return tokens.getTokenType(p[_curToken]) == tokenType
+	return p[_curToken][tokens.tokenType] == tokenType
 end
 
 -- forward declaration
@@ -50,7 +50,7 @@ local function prefixParser(tokenType)
 	if tokenType == tokens.INT then
 		return function(p)
 			local token = p[_curToken]
-			local value = tonumber(tokens.getLiteral(token))
+			local value = tonumber(token[tokens.literal])
 			if value ~= nil then
 				return ast.IntegerLiteral(token, value)
 			end
@@ -63,12 +63,12 @@ local function prefixParser(tokenType)
 		end
 	elseif tokenType == tokens.IDENT then
 		return function(p)
-			return ast.Identifier(p[_curToken], tokens.getLiteral(p[_curToken]))
+			return ast.Identifier(p[_curToken], p[_curToken][tokens.literal])
 		end
 	elseif tokenType == tokens.BANG or tokenType == tokens.MINUS then
 		return function(p)
 			local token = p[_curToken]
-			local operator = tokens.getLiteral(token)
+			local operator = token[tokens.literal]
 			nextToken(p)
 			local right = parseExpression(p, PREFIX)
 			return ast.PrefixExpression(token, operator, right)
@@ -135,7 +135,7 @@ local function infixParser(tokenType)
 	then
 		return function(p, left)
 			local token = p[_curToken]
-			local operator = tokens.getLiteral(token)
+			local operator = token[tokens.literal]
 			local precedence = curPrecedence(p)
 			nextToken(p)
 			local right = parseExpression(p, precedence)
@@ -207,11 +207,11 @@ local function findPrecedence(tokenType)
 end
 
 curPrecedence = function(p)
-	return findPrecedence(tokens.getTokenType(p[_curToken]))
+	return findPrecedence(p[_curToken][tokens.tokenType])
 end
 
 local function peekPrecedence(p)
-	return findPrecedence(tokens.getTokenType(p[_peekToken]))
+	return findPrecedence(p[_peekToken][tokens.tokenType])
 end
 
 local function prefixParserError(p, tokenType)
@@ -219,14 +219,14 @@ local function prefixParserError(p, tokenType)
 end
 
 parseExpression = function(p, precedence)
-	local prefix = prefixParser(tokens.getTokenType(p[_curToken]))
+	local prefix = prefixParser(p[_curToken][tokens.tokenType])
 	if prefix == nil then
 		prefixParserError(p, tokens.getTokenType(p[_curToken]))
 		return nil
 	end
 	local left = prefix(p)
 	while (not peekTokenIs(p, tokens.SEMICOLON)) and precedence < peekPrecedence(p) do
-		local infix = infixParser(tokens.getTokenType(p[_peekToken]))
+		local infix = infixParser(p[_peekToken][tokens.tokenType])
 		if infix == nil then
 			return left
 		end
@@ -242,7 +242,7 @@ local function parseLetStatement(p)
 		return nil
 	end
 
-	local name = ast.Identifier(p[_curToken], tokens.getLiteral(p[_curToken]))
+	local name = ast.Identifier(p[_curToken], p[_curToken][tokens.literal])
 
 	if not expectPeek(p, tokens.ASSIGN) then
 		return nil
@@ -279,7 +279,7 @@ local function parseExpressionStatement(p)
 end
 
 local function parseStatement(p)
-	local curTokenType = tokens.getTokenType(p[_curToken])
+	local curTokenType = p[_curToken][tokens.tokenType]
 	if curTokenType == tokens.LET then
 		return parseLetStatement(p)
 	end
@@ -313,7 +313,7 @@ end
 
 function _parser.parseProgram(parser)
 	local statements = {}
-	while tokens.getTokenType(parser[_curToken]) ~= tokens.EOF do
+	while parser[_curToken][tokens.tokenType] ~= tokens.EOF do
 		local statement = parseStatement(parser)
 		if statement ~= nil then
 			table.insert(statements, statement)

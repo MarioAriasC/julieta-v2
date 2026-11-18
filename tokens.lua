@@ -68,16 +68,11 @@ end
 function tokens.Token(tokenType, literal)
 	return { tokenType, literal }
 end
-
 local _tokenType = 1
-function tokens.getTokenType(token)
-	return token[_tokenType]
-end
+tokens.tokenType = _tokenType
 
 local _literal = 2
-function tokens.getLiteral(token)
-	return token[_literal]
-end
+tokens.literal = _literal
 
 function tokens.toString(token)
 	return string.format("Token(tokenType:%s, literal:'%s')", token[_tokenType], token[_literal])

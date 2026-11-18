@@ -20,7 +20,7 @@ function ast.getToken(instance)
 end
 
 function ast.getTokenLiteral(instance)
-	return tokens.getLiteral(instance[_token])
+	return instance[_token][tokens.literal]
 end
 
 ast.program = {}
