@@ -136,6 +136,10 @@ local function prefixParser(tokenType)
 			local body = parseBlockStatement(p)
 			return ast.FunctionLiteral(token, parameters, body)
 		end
+	elseif tokenType == tokens.STRING then
+		return function(p)
+			return ast.StringLiteral(p[_curToken], p[_curToken][tokens.literal])
+		end
 	else
 		return nil
 	end

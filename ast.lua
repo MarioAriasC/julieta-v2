@@ -140,6 +140,10 @@ local _function_body = 4
 ast.functionLiteralParameters = _function_parameters
 ast.functionLiteralBody = _function_body
 
+function ast.StringLiteral(token, value)
+	return { "StringLiteral", token, value }
+end
+
 function ast.toString(instance)
 	-- print(cjson.encode(instance))
 	local className = instance[_className]

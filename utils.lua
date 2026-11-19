@@ -13,6 +13,12 @@ function utils.forEach(array, body)
 	end
 end
 
+function utils.forEachIndexed(array, body)
+	for k, v in pairs(array) do
+		body(k, v)
+	end
+end
+
 function utils.stacktrace_capture_with_return(body)
 	local ok, final = xpcall(function()
 		return body

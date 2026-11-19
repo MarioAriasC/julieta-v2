@@ -261,5 +261,38 @@ describe("A parser", function()
 				assert
 			)
 		end)
+		it("function parameters", function()
+			local tests = {
+				{ "fn(){}", {} },
+				{ "fn(x){}", { "x" } },
+				{ "fn(x, y , z){}", { "x", "y", "z" } },
+			}
+			ut.forEachTests(tests, 2, function(input, expectedParams)
+				local program = ut.createProgram(input)
+				local fun = ut.getExpression(program)
+				assert.are.same(utils.len(expectedParams), utils.len(fun[ast.functionLiteralParameters]))
+				utils.forEachIndexed(expectedParams, function(i, param)
+					ut.assertLiteralExpression(fun[ast.functionLiteralParameters][i], param, assert)
+				end)
+			end)
+		end)
+		it("call expression", function()
+			local input = "add(1, 2 * 3, 4+5)"
+			local program = ut.createProgram(input)
+			ut.countStatements(1, program, assert)
+			local exp = ut.getExpression(program)
+			ut.assertIdentifier(exp[ast.callExpressionExpression], "add", assert)
+			local arguments = exp[ast.callExpressionArguments]
+			assert.are.same(3, utils.len(arguments))
+			ut.assertLiteralExpression(arguments[1], 1, assert)
+			ut.assertInfixExpression(arguments[2], 2, "*", 3, assert)
+			ut.assertInfixExpression(arguments[3], 4, "+", 5, assert)
+		end)
+		it("literal expression", function()
+			local input = '"hello world";'
+			local program = ut.createProgram(input)
+			ut.countStatements(1, program, assert)
+			assert.are.same("hello world", ut.getExpression(program)[ast.literalValue])
+		end)
 	end)
 end)
