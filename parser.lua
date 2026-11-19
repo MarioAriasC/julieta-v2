@@ -140,6 +140,28 @@ local function prefixParser(tokenType)
 		return function(p)
 			return ast.StringLiteral(p[_curToken], p[_curToken][tokens.literal])
 		end
+	elseif tokenType == tokens.LBRACE then
+		return function(p)
+			local token = p[_curToken]
+			local entries = {}
+			while not peekTokenIs(p, tokens.RBRACE) do
+				nextToken(p)
+				local key = parseExpression(p, LOWEST)
+				if not expectPeek(p, tokens.COLON) then
+					return nil
+				end
+				nextToken(p)
+				local value = parseExpression(p, LOWEST)
+				entries[key] = value
+				if (not peekTokenIs(p, tokens.RBRACE)) and (not expectPeek(p, tokens.COMMA)) then
+					return nil
+				end
+			end
+			if expectPeek(p, tokens.RBRACE) then
+				return ast.HashLiteral(token, entries)
+			end
+			return nil
+		end
 	else
 		return nil
 	end

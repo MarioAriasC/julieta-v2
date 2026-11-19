@@ -144,10 +144,17 @@ function ast.StringLiteral(token, value)
 	return { "StringLiteral", token, value }
 end
 
+function ast.HashLiteral(token, entries)
+	return { "HashLiteral", token, entries }
+end
+
+local _hash_entries = 3
+ast.hashLiteralEntries = _hash_entries
+
 function ast.toString(instance)
 	-- print(cjson.encode(instance))
 	local className = instance[_className]
-	if className == "IntegerLiteral" or className == "BooleanLiteral" then
+	if className == "IntegerLiteral" or className == "BooleanLiteral" or className == "StringLiteral" then
 		return instance[_token][tokens.literal]
 	elseif className == "Identifier" then
 		return instance[_identifier_value]

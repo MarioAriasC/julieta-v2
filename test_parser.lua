@@ -294,5 +294,32 @@ describe("A parser", function()
 			ut.countStatements(1, program, assert)
 			assert.are.same("hello world", ut.getExpression(program)[ast.literalValue])
 		end)
+		it("array literal", function()
+			local input = "[1, 2 * 2, 3 + 3]"
+			local program = ut.createProgram(input)
+			local array = ut.getExpression(program)
+			local elements = array[ast.arrayLiteralElements]
+			ut.assertIntegerLiteral(elements[1], 1, assert)
+			ut.assertInfixExpression(elements[2], 2, "*", 2, assert)
+			ut.assertInfixExpression(elements[3], 3, "+", 3, assert)
+		end)
+		it("parsing index expression", function()
+			local input = "myArray[1 + 1]"
+			local program = ut.createProgram(input)
+			local index = ut.getExpression(program)
+			ut.assertIdentifier(index[ast.indexExpessionLeft], "myArray", assert)
+			ut.assertInfixExpression(index[ast.indexExpessionIndex], 1, "+", 1, assert)
+		end)
+		it("hash string keys", function()
+			local input = '{"one": 1, "two": 2, "three": 3}'
+			local program = ut.createProgram(input)
+			local hashLiteral = ut.getExpression(program)
+			assert.are.same(3, utils.len(hashLiteral[ast.hashLiteralEntries]))
+			local expected = { one = 1, two = 2, three = 3 }
+			for key, value in pairs(hashLiteral[ast.hashLiteralEntries]) do
+				local expectedValue = expected[ast.toString(key)]
+				ut.assertLiteralExpression(value, expectedValue, assert)
+			end
+		end)
 	end)
 end)
