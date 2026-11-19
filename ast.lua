@@ -130,6 +130,16 @@ ast.ifExpressionCondition = _if_condition
 ast.ifExpressionConsequence = _if_consequence
 ast.ifExpressionAlternative = _if_alternative
 
+function ast.FunctionLiteral(token, parameters, body)
+	return { "FunctionLiteral", token, parameters, body }
+end
+
+local _function_parameters = 3
+local _function_body = 4
+
+ast.functionLiteralParameters = _function_parameters
+ast.functionLiteralBody = _function_body
+
 function ast.toString(instance)
 	-- print(cjson.encode(instance))
 	local className = instance[_className]

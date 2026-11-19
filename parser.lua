@@ -27,6 +27,13 @@ local function peekTokenIs(p, tokenType)
 	return p[_peekToken][tokens.tokenType] == tokenType
 end
 
+local function peekError(p, tokenType)
+	table.insert(
+		p[_errors],
+		string.format("Expected next token to be %s, got %s instead", tokenType, p[_peekToken][tokens.tokenType])
+	)
+end
+
 local function expectPeek(p, tokenType)
 	if peekTokenIs(p, tokenType) then
 		nextToken(p)
@@ -45,6 +52,7 @@ end
 local parseExpression
 local parseExpressionList
 local parseBlockStatement
+local parseFunctionParameters
 
 local function prefixParser(tokenType)
 	if tokenType == tokens.INT then
@@ -113,6 +121,20 @@ local function prefixParser(tokenType)
 				alternative = parseBlockStatement(p)
 			end
 			return ast.IfExpression(token, condition, consequence, alternative)
+		end
+	elseif tokenType == tokens.FUNCTION then
+		return function(p)
+			local token = p[_curToken]
+			if not expectPeek(p, tokens.LPAREN) then
+				return nil
+			end
+
+			local parameters = parseFunctionParameters(p)
+			if not expectPeek(p, tokens.LBRACE) then
+				return nil
+			end
+			local body = parseBlockStatement(p)
+			return ast.FunctionLiteral(token, parameters, body)
 		end
 	else
 		return nil
@@ -221,7 +243,7 @@ end
 parseExpression = function(p, precedence)
 	local prefix = prefixParser(p[_curToken][tokens.tokenType])
 	if prefix == nil then
-		prefixParserError(p, tokens.getTokenType(p[_curToken]))
+		prefixParserError(p, p[_curToken][tokens.tokenType])
 		return nil
 	end
 	local left = prefix(p)
@@ -302,6 +324,32 @@ parseBlockStatement = function(p)
 		nextToken(p)
 	end
 	return ast.BlockStatement(token, statements)
+end
+
+parseFunctionParameters = function(p)
+	local parameters = {}
+	if peekTokenIs(p, tokens.RPAREN) then
+		nextToken(p)
+		return parameters
+	end
+
+	nextToken(p)
+	local token = p[_curToken]
+
+	table.insert(parameters, ast.Identifier(token, token[tokens.literal]))
+
+	while peekTokenIs(p, tokens.COMMA) do
+		nextToken(p)
+		nextToken(p)
+		local innerToken = p[_curToken]
+		table.insert(parameters, ast.Identifier(innerToken, innerToken[tokens.literal]))
+	end
+
+	if not expectPeek(p, tokens.RPAREN) then
+		return nil
+	end
+
+	return parameters
 end
 
 function _parser.Parser(lexer)

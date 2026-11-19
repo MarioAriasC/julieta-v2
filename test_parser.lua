@@ -245,5 +245,21 @@ describe("A parser", function()
 			local alternative = alternativeStatements[1]
 			ut.assertIdentifier(alternative[ast.expressionStatementExpression], "y", assert)
 		end)
+		it("function literal", function()
+			local input = "fn(x, y) { x + y;}"
+			local program = ut.createProgram(input)
+			ut.countStatements(1, program, assert)
+			local fun = ut.getExpression(program)
+			ut.assertLiteralExpression(fun[ast.functionLiteralParameters][1], "x", assert)
+			ut.assertLiteralExpression(fun[ast.functionLiteralParameters][2], "y", assert)
+			assert.are.same(1, utils.len(fun[ast.functionLiteralBody][ast.blokStatementStatements]))
+			ut.assertInfixExpression(
+				fun[ast.functionLiteralBody][ast.blokStatementStatements][1][ast.expressionStatementExpression],
+				"x",
+				"+",
+				"y",
+				assert
+			)
+		end)
 	end)
 end)
